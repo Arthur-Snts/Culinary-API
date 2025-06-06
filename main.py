@@ -75,6 +75,8 @@ def lista_receitas():
 
 @app.post('/Receitas')
 def cadastra_receita(receita_cadastra:Receita):
+    if not any(usuario.id == receita_cadastra.usuario_id for usuario in usuarios):
+            raise HTTPException(404, "Usuário não encontrado")
     for receita in receitas:
         if receita.nome == receita_cadastra.nome:
             raise HTTPException(409, "Nome já Cadastrado")
@@ -126,14 +128,13 @@ def lista_favoritos(usuario_id:int):
 
 @app.post('/Favoritos/')
 def cadastra_favorito(favorito_cadastra:Favorito):
-    for favorito in favoritos:
-
-        if not any(usuario.id == favorito_cadastra.usuario_id for usuario in usuarios):
+    if not any(usuario.id == favorito_cadastra.usuario_id for usuario in usuarios):
             raise HTTPException(404, "Usuário não encontrado")
 
-        if not any(receita.id == favorito_cadastra.receita_id for receita in receitas):
-            raise HTTPException(404, "Receita não encontrada")
-        
+    if not any(receita.id == favorito_cadastra.receita_id for receita in receitas):
+        raise HTTPException(404, "Receita não encontrada")
+    
+    for favorito in favoritos:
         if favorito.usuario_id == favorito_cadastra.usuario_id and favorito.receita_id == favorito_cadastra.receita_id:
             raise HTTPException(409, "Receita já Favoritada por esse Usuário")
         
