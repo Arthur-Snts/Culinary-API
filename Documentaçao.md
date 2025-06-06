@@ -34,34 +34,34 @@
 
 ---
 
-## 4. /Avaliar
+## 4. /Avaliacoes
 
 | Método | Endpoint            | Descrição                                          |
 |--------|---------------------|----------------------------------------------------|
-| GET    | /Avaliar/{nome_receita} | Mostra a avaliação de uma receita pesquisada pelo nome |
-| GET    | /Avaliar            | Mostra a avaliação das receitas                      |
-| POST   | /Avaliar            | Cadastra avaliação de uma receita                    |
-| DELETE | /Avaliar            | Deletar avaliação de uma receita                      |
-| PUT    | /Avaliar            | Alterar a avaliação de uma receita                    |
+| GET    | /Avaliacoes/{nome_receita} | Mostra a avaliação de uma receita pesquisada pelo nome |
+| GET    | /Avaliacoes            | Mostra a avaliação das receitas                      |
+| POST   | /Avaliacoes            | Cadastra avaliação de uma receita                    |
+| DELETE | /Avaliacoes            | Deletar avaliação de uma receita                      |
+| PUT    | /Avaliacoes            | Alterar a avaliação de uma receita                    |
 
 ---
 
-## 5. /Comentar
+## 5. /Comentarios
 
 | Método | Endpoint            | Descrição                                         |
 |--------|---------------------|---------------------------------------------------|
-| GET    | /Comentar/{nome_receita} | Mostra os comentários de uma receita            |
-| GET    | /Comentar           | Mostra todos os comentários                        |
-| POST   | /Comentar           | Cadastra comentários de uma receita                |
-| DELETE | /Comentar           | Deletar um comentário de uma receita               |
-| PUT    | /Comentar           | Altera um comentário                                |
+| GET    | /Comentarios/{nome_receita} | Mostra os comentários de uma receita            |
+| GET    | /Comentarios           | Mostra todos os comentários                        |
+| POST   | /Comentarios           | Cadastra comentários de uma receita                |
+| DELETE | /Comentarios           | Deletar um comentário de uma receita               |
+| PUT    | /Comentarios           | Altera um comentário                                |
 
 ---
 
-## 6. /Favoritar
+## 6. /Favoritos
 
 | Método | Endpoint   | Descrição                          |
 |--------|------------|----------------------------------|
-| GET    | /Favoritar | Mostra todas as receitas favoritados |
-| POST   | /Favoritar | Cadastra uma receita como favorito  |
-| DELETE | /Favoritar | Remove uma receita dos favoritos    |
+| GET    | /Favoritos | Mostra todas as receitas favoritados |
+| POST   | /Favoritos | Cadastra uma receita como favorito  |
+| DELETE | /Favoritos | Remove uma receita dos favoritos    |
