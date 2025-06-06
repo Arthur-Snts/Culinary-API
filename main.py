@@ -110,7 +110,7 @@ def atualiza_receita( dados_novos:Receita):
                                                         #FAVORITAR
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@app.get('/Favoritar/',response_model=List[Favorito])
+@app.get('/Favoritos/',response_model=List[Favorito])
 def lista_favoritos(usuario_id:int):
     favorito_dele:List[Favorito] = []
     for favorito in favoritos:
@@ -124,7 +124,7 @@ def lista_favoritos(usuario_id:int):
     
 # -------------------------------------------------------------------------------
 
-@app.post('/Favoritar/')
+@app.post('/Favoritos/')
 def cadastra_favorito(favorito_cadastra:Favorito):
     for favorito in favoritos:
 
@@ -142,7 +142,7 @@ def cadastra_favorito(favorito_cadastra:Favorito):
 
 # -------------------------------------------------------------------------------
 
-@app.delete('/Favoritar/')
+@app.delete('/Favoritos/')
 def deleta_favorito(favorito_id:int):
     for favorito in favoritos:
         if favorito.id == favorito_id:
@@ -157,7 +157,7 @@ def deleta_favorito(favorito_id:int):
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     
-@app.get('/Avaliar/usuario-receita', response_model=Avaliacao)
+@app.get('/Avaliacoes/usuario-receita', response_model=Avaliacao)
 def lista_avaliacao_por_usuario_e_receita(usuario_id: int, receita_id: int):
     for avaliacao in avaliacoes:
         if avaliacao.usuario_id == usuario_id and avaliacao.receita_id == receita_id:
@@ -167,7 +167,7 @@ def lista_avaliacao_por_usuario_e_receita(usuario_id: int, receita_id: int):
 
 # -------------------------------------------------------------------------------
     
-@app.get('/Avaliar/', response_model=List[Avaliacao])
+@app.get('/Avaliacoes/', response_model=List[Avaliacao])
 def lista_avaliacao_por_receita(receita_id: int):
     avaliacoes_da_receita: List[Avaliacao] = []
 
@@ -182,7 +182,7 @@ def lista_avaliacao_por_receita(receita_id: int):
     
 # -------------------------------------------------------------------------------
 
-@app.post('/Avaliar/')
+@app.post('/Avaliacoes/')
 def cadastra_avaliacao(avaliacao_cadastra: Avaliacao):
     if not any(usuario.id == avaliacao_cadastra.usuario_id for usuario in usuarios):
             raise HTTPException(404, "Usuário não encontrado")
@@ -198,7 +198,7 @@ def cadastra_avaliacao(avaliacao_cadastra: Avaliacao):
 
 # -------------------------------------------------------------------------------
 
-@app.put('/Avaliar')
+@app.put('/Avaliacoes')
 def atualiza_avaliacao(dados_novos: Avaliacao):
     for i, avaliacao in enumerate(avaliacoes):
         if avaliacao.usuario_id == dados_novos.usuario_id and avaliacao.receita_id == dados_novos.receita_id:
@@ -209,7 +209,7 @@ def atualiza_avaliacao(dados_novos: Avaliacao):
 
 # -------------------------------------------------------------------------------
 
-@app.delete('/Avaliar/')
+@app.delete('/Avaliacoes/')
 def deleta_avaliacao(avaliacao_id: int):
     for avaliacao in avaliacoes:
         if avaliacao.id == avaliacao_id:
@@ -224,7 +224,7 @@ def deleta_avaliacao(avaliacao_id: int):
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     
-@app.get('/Comentar/', response_model=List[Comentario])
+@app.get('/Comentarios/', response_model=List[Comentario])
 def lista_comentario_por_receita(receita_id: int):
     comentarios_da_receita: List[Comentario] = []
 
@@ -239,7 +239,7 @@ def lista_comentario_por_receita(receita_id: int):
 
 # -------------------------------------------------------------------------------
     
-@app.get('/Comentar/usuario-receita', response_model=Comentario)
+@app.get('/Comentarios/usuario-receita', response_model=Comentario)
 def lista_comentario_por_usuario_e_receita(usuario_id: int, receita_id: int):
     for comentario in comentarios:
         if comentario.usuario_id == usuario_id and comentario.receita_id == receita_id:
@@ -249,7 +249,7 @@ def lista_comentario_por_usuario_e_receita(usuario_id: int, receita_id: int):
 
 # -------------------------------------------------------------------------------
     
-@app.post('/Comentar/')
+@app.post('/Comentarios/')
 def cadatra_comentario(comentario_cadastra: Comentario):
     if not any(usuario.id == comentario_cadastra.usuario_id for usuario in usuarios):
             raise HTTPException(404, "Usuário não encontrado")
@@ -265,7 +265,7 @@ def cadatra_comentario(comentario_cadastra: Comentario):
 
 # -------------------------------------------------------------------------------
     
-@app.put('/Comentar/')
+@app.put('/Comentarios/')
 def atualiza_comentario(dados_novos: Comentario):
     for i, comentario in enumerate(comentarios):
         if comentario.id == dados_novos.id:
@@ -276,7 +276,7 @@ def atualiza_comentario(dados_novos: Comentario):
 
 # -------------------------------------------------------------------------------
     
-@app.delete('/Comentar/')
+@app.delete('/Comentarios/')
 def deleta_comentario(comentario_id: int):
     for comentario in comentarios:
         if comentario.id == comentario_id:
