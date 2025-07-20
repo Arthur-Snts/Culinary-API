@@ -1,16 +1,13 @@
-from models import Usuario, Receita, Favorito,Comentario,Avaliacao
-from fastapi import FastAPI,HTTPException
+from models import Avaliacao, Receita, Usuario, Comentario, Favorito
+from fastapi import HTTPException
+from config import app
 from typing import List
-
-
-app = FastAPI()
-
-usuarios:List[Usuario] = []
-receitas:List[Receita] = []
-favoritos:List[Favorito] = []
-comentarios:List[Comentario] = []
-avaliacoes:List[Avaliacao] = []
-
+from statements import usuarios_all, post_usuario, update_usuario, delete_usuario # Statements de Usuários
+from statements import receita_one, receitas_all, post_receita, update_receita, delete_receita # Statements de Receitas
+from statements import favoritos_all, favoritos_usuario, post_favorito, delete_favorito # Statements de Favoritos
+from statements import comentarios_all, comentario_usuario_receita, comentarios_receita, post_comentario, update_comentario, delete_comentario # Statements de Comentários
+from statements import avaliacoes_all, avaliacoes_receita, avalicao_usuario_receita, post_avaliacao, update_avaliacao, delete_avaliacao # Statements de Avaliações
+from statements import SessionDep
 
 
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,21 +16,23 @@ avaliacoes:List[Avaliacao] = []
 
 
 @app.post('/Usuarios')
-def cadastra_usuario(usuario_cadastra:Usuario):
+def cadastra_usuario(usuario_cadastra:Usuario, session:SessionDep):
+    usuarios = usuarios_all(session=session)
     for usuario in usuarios:
         if usuario.email == usuario_cadastra.email:
             raise HTTPException(400, "Email já Cadastrado")
     
-    usuarios.append(usuario_cadastra)
+    post_usuario(usuario=usuario_cadastra,session=session)
     return {"mensagem": "Usuário Cadastrado com sucesso"}
             
 # -------------------------------------------------------------------------------          
 
 @app.delete('/Usuarios')
-def deleta_usuario(usuario_id:int):
+def deleta_usuario(usuario_id:int, session:SessionDep):
+    usuarios = usuarios_all(session=session)
     for usuario in usuarios:
         if usuario.id == usuario_id:
-            usuarios.remove(usuario)
+            delete_usuario(id=usuario_id, session=session)
             return {"mensagem": "Usuário deletado com sucesso"}
         
     raise HTTPException(404, "Usuário não Encontrado")
@@ -41,10 +40,11 @@ def deleta_usuario(usuario_id:int):
 # ------------------------------------------------------------------------------- 
 
 @app.put('/Usuarios')
-def atualiza_usuario(dados_novos:Usuario):
-    for i, usuario in enumerate(usuarios):
+def atualiza_usuario(dados_novos:Usuario, session:SessionDep):
+    usuarios = usuarios_all(session=session)
+    for usuario in usuarios:
         if usuario.id == dados_novos.id:
-            usuarios[i] = dados_novos
+            update_usuario(usuario=dados_novos,session=session)
             return {"mensagem": "Usuário Editado com sucesso"}
         
     raise HTTPException(404, "Usuário não Encontrado")
@@ -57,40 +57,45 @@ def atualiza_usuario(dados_novos:Usuario):
 
 
 
-@app.get('/Receitas/{nome}',response_model=Receita)
-def lista_receita(nome:str):
-    for receita in receitas:
-        if receita.nome == nome:
-            return receita
+@app.get('/Receitas/{nome}')
+def lista_receita(nome:str, session:SessionDep) -> Receita:
+    receita = receita_one(nome=nome, session=session)
+    if receita != None:
+        return receita
         
     raise HTTPException(404, "Receita não Encontrada")
 
 # -------------------------------------------------------------------------------
 
-@app.get('/Receitas',response_model=List[Receita])
-def lista_receitas():
+@app.get('/Receitas')
+def lista_receitas(session:SessionDep) -> List[Receita]:
+    receitas = receitas_all(session=session)
     return receitas
 
 # -------------------------------------------------------------------------------
 
 @app.post('/Receitas')
-def cadastra_receita(receita_cadastra:Receita):
+def cadastra_receita(receita_cadastra:Receita, session:SessionDep):
+    usuarios = usuarios_all(session=session)
+
     if not any(usuario.id == receita_cadastra.usuario_id for usuario in usuarios):
             raise HTTPException(404, "Usuário não encontrado")
-    for receita in receitas:
-        if receita.nome == receita_cadastra.nome:
-            raise HTTPException(409, "Nome já Cadastrado")
+    
+    receita = receita_one(nome=receita_cadastra.nome,session=session)
+    if receita != None:
+        raise HTTPException(409, "Nome já Cadastrado")
         
-    receitas.append(receita_cadastra)
+    post_receita(receita=receita_cadastra,session=session)
     return {"mensagem": "Receita Cadastrada com sucesso"}
 
 # -------------------------------------------------------------------------------
 
 @app.delete('/Receitas')
-def deleta_receita(receita_id:int):
+def deleta_receita(receita_id:int, session:SessionDep):
+    receitas = receitas_all(session=session)
     for receita in receitas:
         if receita.id == receita_id:
-            receitas.remove(receita)
+            delete_receita(id=receita_id,session=session)
             return {"mensagem": "Receita deletada com sucesso"}
        
     raise HTTPException(404, "Receita não Encontrada")
@@ -98,10 +103,11 @@ def deleta_receita(receita_id:int):
 # -------------------------------------------------------------------------------
 
 @app.put('/Receitas')
-def atualiza_receita( dados_novos:Receita):
-    for i, receita in enumerate(receitas):
+def atualiza_receita( dados_novos:Receita, session:SessionDep):
+    receitas = receitas_all(session=session)
+    for receita in receitas:
         if receita.id == dados_novos.id:
-            receitas[i] = dados_novos
+            update_receita(receita=dados_novos,session=session)
             return {"mensagem": "Receita Atualizada com sucesso"}
         
     raise HTTPException(404, "Receita não Encontrada")
@@ -112,12 +118,11 @@ def atualiza_receita( dados_novos:Receita):
                                                         #FAVORITAR
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@app.get('/Favoritos/',response_model=List[Favorito])
-def lista_favoritos(usuario_id:int):
-    favorito_dele:List[Favorito] = []
-    for favorito in favoritos:
-        if favorito.usuario_id == usuario_id:
-            favorito_dele.append(favorito)
+@app.get('/Favoritos/')
+def lista_favoritos(usuario_id:int, session:SessionDep) -> List[Favorito]:
+
+    favorito_dele = favoritos_usuario(id=usuario_id,session=session)
+    
     
     if favorito_dele == []:
         raise HTTPException(404, "Usuário não Cadastrado ou não Possui Favoritos")
@@ -127,27 +132,32 @@ def lista_favoritos(usuario_id:int):
 # -------------------------------------------------------------------------------
 
 @app.post('/Favoritos/')
-def cadastra_favorito(favorito_cadastra:Favorito):
+def cadastra_favorito(favorito_cadastra:Favorito, session:SessionDep):
+
+    usuarios = usuarios_all(session=session)
     if not any(usuario.id == favorito_cadastra.usuario_id for usuario in usuarios):
             raise HTTPException(404, "Usuário não encontrado")
-
+    
+    receitas = receitas_all(session=session)
     if not any(receita.id == favorito_cadastra.receita_id for receita in receitas):
         raise HTTPException(404, "Receita não encontrada")
     
+    favoritos = favoritos_usuario(id=favorito_cadastra.usuario_id, session=session)
     for favorito in favoritos:
-        if favorito.usuario_id == favorito_cadastra.usuario_id and favorito.receita_id == favorito_cadastra.receita_id:
+        if favorito.receita_id == favorito_cadastra.receita_id:
             raise HTTPException(409, "Receita já Favoritada por esse Usuário")
         
-    favoritos.append(favorito_cadastra)
+    post_favorito(favorito=favorito_cadastra,session=session)
     return {"mensagem": "Favorito Cadastrado com sucesso"}
 
 # -------------------------------------------------------------------------------
 
 @app.delete('/Favoritos/')
-def deleta_favorito(favorito_id:int):
+def deleta_favorito(favorito_id:int, session:SessionDep):
+    favoritos = favoritos_all(session=session)
     for favorito in favoritos:
         if favorito.id == favorito_id:
-            favoritos.remove(favorito)
+            delete_favorito(id=favorito_id,session=session)
             return {"mensagem": "Favorito deletado com sucesso"}
         
     raise HTTPException(404, "Favorito não Encontrado") 
@@ -158,23 +168,19 @@ def deleta_favorito(favorito_id:int):
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     
-@app.get('/Avaliacoes/usuario-receita', response_model=Avaliacao)
-def lista_avaliacao_por_usuario_e_receita(usuario_id: int, receita_id: int):
-    for avaliacao in avaliacoes:
-        if avaliacao.usuario_id == usuario_id and avaliacao.receita_id == receita_id:
-            return avaliacao
+@app.get('/Avaliacoes/usuario-receita')
+def lista_avaliacao_por_usuario_e_receita(usuario_id: int, receita_id: int, session:SessionDep) -> Avaliacao:
+    avaliacao = avalicao_usuario_receita(rec_id=receita_id, usu_id=usuario_id, session=session)
+    if avaliacao != None:
+        return avaliacao
 
     raise HTTPException(404, "Avaliação não encontrada para este usuário e receita")
 
 # -------------------------------------------------------------------------------
     
-@app.get('/Avaliacoes/', response_model=List[Avaliacao])
-def lista_avaliacao_por_receita(receita_id: int):
-    avaliacoes_da_receita: List[Avaliacao] = []
-
-    for avaliacao in avaliacoes:
-        if avaliacao.receita_id == receita_id:
-            avaliacoes_da_receita.append(avaliacao)
+@app.get('/Avaliacoes/')
+def lista_avaliacao_por_receita(receita_id: int, session:SessionDep) -> List[Avaliacao]:
+    avaliacoes_da_receita = avaliacoes_receita(rec_id=receita_id, session=session)
     
     if avaliacoes_da_receita == []:
         raise HTTPException(404, "Nenhuma avaliação encontrada para esta receita")
@@ -184,37 +190,40 @@ def lista_avaliacao_por_receita(receita_id: int):
 # -------------------------------------------------------------------------------
 
 @app.post('/Avaliacoes/')
-def cadastra_avaliacao(avaliacao_cadastra: Avaliacao):
+def cadastra_avaliacao(avaliacao_cadastra: Avaliacao, session:SessionDep):
+    usuarios = usuarios_all(session=session)
     if not any(usuario.id == avaliacao_cadastra.usuario_id for usuario in usuarios):
             raise HTTPException(404, "Usuário não encontrado")
-
+    receitas = receitas_all(session=session)
     if not any(receita.id == avaliacao_cadastra.receita_id for receita in receitas):
         raise HTTPException(404, "Receita não encontrada")
-    for avaliacao in avaliacoes:
-        if avaliacao.usuario_id == avaliacao_cadastra.usuario_id and avaliacao.receita_id == avaliacao_cadastra.receita_id:
-            raise HTTPException(409, "Receita já avaliada por esse usuário")
+    
+    avaliacao = avalicao_usuario_receita(rec_id=avaliacao_cadastra.receita_id, usu_id=avaliacao_cadastra.usuario_id,session=session)
+    if avaliacao != None:
+        raise HTTPException(409, "Receita já avaliada por esse usuário")
         
-    avaliacoes.append(avaliacao_cadastra)
+    post_avaliacao(avaliacao=avaliacao_cadastra,session=session)
     return {"mensagem": "Avaliação registrada com sucesso"}
 
 # -------------------------------------------------------------------------------
 
 @app.put('/Avaliacoes')
-def atualiza_avaliacao(dados_novos: Avaliacao):
-    for i, avaliacao in enumerate(avaliacoes):
-        if avaliacao.usuario_id == dados_novos.usuario_id and avaliacao.receita_id == dados_novos.receita_id:
-            avaliacoes[i] = dados_novos
-            return {"mensagem": "Avaliação atualizada com sucesso"}
+def atualiza_avaliacao(dados_novos: Avaliacao, session:SessionDep):
+    avaliacao = avalicao_usuario_receita(rec_id=dados_novos.receita_id, usu_id=dados_novos.usuario_id,session=session)
+    if avaliacao != None and avaliacao.id == dados_novos.id:
+        update_avaliacao(avaliacao=dados_novos,session=session)
+        return {"mensagem": "Avaliação atualizada com sucesso"}
     
     raise HTTPException(404, "Avaliação não encontrada para este usuário e receita")
 
 # -------------------------------------------------------------------------------
 
 @app.delete('/Avaliacoes/')
-def deleta_avaliacao(avaliacao_id: int):
+def deleta_avaliacao(avaliacao_id: int, session:SessionDep):
+    avaliacoes = avaliacoes_all(session=session)
     for avaliacao in avaliacoes:
         if avaliacao.id == avaliacao_id:
-            avaliacoes.remove(avaliacao)
+            delete_avaliacao(id=avaliacao_id,session=session)
             return {"mensagem": "Avaliação deletada com sucesso"}
     
     raise HTTPException(404, "Avaliação não encontrada")
@@ -225,13 +234,9 @@ def deleta_avaliacao(avaliacao_id: int):
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     
-@app.get('/Comentarios/', response_model=List[Comentario])
-def lista_comentario_por_receita(receita_id: int):
-    comentarios_da_receita: List[Comentario] = []
-
-    for comentario in comentarios:
-        if comentario.receita_id == receita_id:
-            comentarios_da_receita.append(comentario)
+@app.get('/Comentarios/')
+def lista_comentario_por_receita(receita_id: int, session:SessionDep) -> List[Comentario]:
+    comentarios_da_receita = comentarios_receita(rec_id=receita_id, session=session)
     
     if comentarios_da_receita == []:
         raise HTTPException(404, "Nenhum comentário encontrado para esta receita")
@@ -240,48 +245,52 @@ def lista_comentario_por_receita(receita_id: int):
 
 # -------------------------------------------------------------------------------
     
-@app.get('/Comentarios/usuario-receita', response_model=Comentario)
-def lista_comentario_por_usuario_e_receita(usuario_id: int, receita_id: int):
-    for comentario in comentarios:
-        if comentario.usuario_id == usuario_id and comentario.receita_id == receita_id:
-            return comentario
+@app.get('/Comentarios/usuario-receita')
+def lista_comentario_por_usuario_e_receita(usuario_id: int, receita_id: int, session:SessionDep) -> Comentario:
+
+    comentario = comentario_usuario_receita(usu_id=usuario_id, rec_id= receita_id, session=session)
+    if comentario != None:
+        return comentario
 
     raise HTTPException(404, "Comentário não encontrado para este usuário e receita")
 
 # -------------------------------------------------------------------------------
     
 @app.post('/Comentarios/')
-def cadatra_comentario(comentario_cadastra: Comentario):
+def cadatra_comentario(comentario_cadastra: Comentario, session:SessionDep):
+    usuarios= usuarios_all(session=session)
     if not any(usuario.id == comentario_cadastra.usuario_id for usuario in usuarios):
             raise HTTPException(404, "Usuário não encontrado")
-
+    receitas = receitas_all(session=session)
     if not any(receita.id == comentario_cadastra.receita_id for receita in receitas):
         raise HTTPException(404, "Receita não encontrada")
-    for comentario in comentarios:
-        if comentario.id == comentario_cadastra.id:
-            raise HTTPException(400, "Comentário com esse ID já existe")
     
-    comentarios.append(comentario_cadastra)
+    comentario = comentario_usuario_receita(usu_id=comentario_cadastra.usuario_id, rec_id= comentario_cadastra.receita_id,session=session)
+    if comentario != None:
+            raise HTTPException(409, "Receita já comentada por esse usuário")
+    
+    post_comentario(comentario=comentario_cadastra,session=session)
     return {"mensagem": "Comentário criado com sucesso"}
 
 # -------------------------------------------------------------------------------
     
 @app.put('/Comentarios/')
-def atualiza_comentario(dados_novos: Comentario):
-    for i, comentario in enumerate(comentarios):
-        if comentario.id == dados_novos.id:
-            comentarios[i] = dados_novos
-            return {"mensagem": "Comentário atualizado com sucesso"}
+def atualiza_comentario(dados_novos: Comentario, session:SessionDep):
+    comentario = comentario_usuario_receita(rec_id=dados_novos.receita_id, usu_id=dados_novos.usuario_id, session=session)
+    if comentario != None and comentario.id == dados_novos.id:
+        update_comentario(comentario=dados_novos,session=session)
+        return {"mensagem": "Comentário atualizado com sucesso"}
     
     raise HTTPException(404, "Comentário não encontrado")
 
 # -------------------------------------------------------------------------------
     
 @app.delete('/Comentarios/')
-def deleta_comentario(comentario_id: int):
+def deleta_comentario(comentario_id: int, session:SessionDep):
+    comentarios = comentarios_all(session=session)
     for comentario in comentarios:
         if comentario.id == comentario_id:
-            comentarios.remove(comentario)
+            delete_comentario(id=comentario_id, session=session)
             return {"mensagem": "Comentário deletado com sucesso"}
     
     raise HTTPException(404, "Comentário não encontrado")

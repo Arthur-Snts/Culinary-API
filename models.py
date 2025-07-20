@@ -1,48 +1,43 @@
-from pydantic import BaseModel
-from typing import List, Optional
+from sqlmodel import SQLModel, Field
+from typing import List
 from datetime import date
 
 
-class Comentario(BaseModel):
-    id: int
-    texto: str
-    data: date
-    usuario_id: int
-    receita_id: int
+class Comentario(SQLModel, table = True):
+    id: int = Field(primary_key=True)
+    texto: str = Field(index=False)
+    data: date = Field(index=False)
+    usuario_id: int = Field()
+    receita_id: int = Field()
 
 
-class Avaliacao(BaseModel):
-    id: int
-    nota: float
-    comentario: Optional[str] = None
-    usuario_id: int
-    receita_id: int  
+class Avaliacao(SQLModel, table = True):
+    id: int = Field(primary_key=True)
+    nota: float = Field(index=False)
+    comentario:str | None = Field(index=False, default=None)
+    usuario_id: int = Field()
+    receita_id: int  = Field()
 
 
-class Favorito(BaseModel):
-    id: int
-    usuario_id: int
-    receita_id: int
+class Favorito(SQLModel, table = True):
+    id: int = Field(primary_key=True)
+    usuario_id: int = Field()
+    receita_id: int = Field()
 
-class Receita(BaseModel):
-    id: int
-    nome: str
-    descricao: str
-    ingredientes: str
-    modo_preparo: str
-    usuario_id: int
+class Receita(SQLModel, table = True):
+    id: int = Field(primary_key=True)
+    nome: str = Field(index=False)
+    descricao: str = Field(index=False)
+    ingredientes: str = Field(index=False)
+    modo_preparo: str = Field(index=False)
+    usuario_id: int = Field()
 
-    comentarios: List[Comentario] = []
-    avaliacoes: List[Avaliacao] = []
-    favoritos: List[Favorito] = []
+    
 
-class Usuario(BaseModel):
-    id: int
-    nome: str
-    email: str
-    senha: str
+class Usuario(SQLModel, table = True):
+    id: int  = Field(primary_key=True)
+    nome: str = Field(index=False)
+    email: str= Field(index=False)
+    senha: str = Field(index=False)
 
-    receitas: List[Receita] = []
-    comentarios: List[Comentario] = []
-    avaliacoes: List[Avaliacao] = []
-    favoritos: List[Favorito] = []
+    
