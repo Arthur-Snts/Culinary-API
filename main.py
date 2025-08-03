@@ -22,7 +22,7 @@ def login_usuario(usu_email:str, usu_senha:str, session:SessionDep) -> Usuario |
         if usuario.email == usu_email:
             if usuario.senha == usu_senha:
                 return usuario
-        return {"mensagem": "Senha Incorreta"}
+            return {"mensagem": "Senha Incorreta"}
     return {"mensagem": "Email não Existe"}
             
 # -------------------------------------------------------------------------------    
