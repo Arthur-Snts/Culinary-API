@@ -15,6 +15,18 @@ from statements import SessionDep
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+@app.get('/Usuarios')
+def login_usuario(usu_email:str, usu_senha:str, session:SessionDep) -> Usuario | str:
+    usuarios = usuarios_all(session=session)
+    for usuario in usuarios:
+        if usuario.email == usu_email:
+            if usuario.senha == usu_senha:
+                return usuario
+        return {"mensagem": "Senha Incorreta"}
+    return {"mensagem": "Email não Existe"}
+            
+# -------------------------------------------------------------------------------    
+
 @app.post('/Usuarios')
 def cadastra_usuario(usuario_cadastra:Usuario, session:SessionDep):
     usuarios = usuarios_all(session=session)
