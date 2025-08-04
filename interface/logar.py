@@ -1,4 +1,3 @@
-# logar.py
 import requests
 from sessao import sessao
 
