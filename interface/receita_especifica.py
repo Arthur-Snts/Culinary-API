@@ -181,9 +181,9 @@ def menu_receita_especifica():
         elif opcao == "4":
             mostrar_media_avaliacao()
         elif opcao == "5":
-            criar_comentario()       # função para criar comentário (nova)
+            criar_comentario()       
         elif opcao == "6":
-            atualizar_comentario()      # função para editar comentário (nova)
+            atualizar_comentario()      
         elif opcao == "7":
             deletar_comentario()
         elif opcao == "8":
